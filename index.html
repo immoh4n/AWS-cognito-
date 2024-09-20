@@ -3,50 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check Cognito User Status</title>
-
-    <!-- AWS Amplify Library -->
-    <script src="https://cdn.jsdelivr.net/npm/aws-amplify@4.3.22/dist/aws-amplify.min.js"></script>
-
-    <script>
-        // Configure Amplify with your Cognito details
-        Amplify.configure({
-            Auth: {
-                region: 'ap-south-1', // Your AWS region
-                userPoolId: 'ap-south-1_02GdgF0x4', // Your User Pool ID
-                userPoolWebClientId: '19ekqosinh7s7hb5jqikej5c2d', // Your App Client ID
-            }
-        });
-
-        // Function to check if the user is logged in
-        function checkIfUserLoggedIn() {
-            Amplify.Auth.currentAuthenticatedUser()
-                .then(user => {
-                    // Successfully retrieved user
-                    const userEmail = user.attributes.email;
-                    document.getElementById('user-name').innerText = `Welcome, ${userEmail}`;
-                })
-                .catch(() => {
-                    // No user logged in
-                    document.getElementById('user-name').innerText = 'Guest';
-                });
-        }
-
-        // Call the function on page load to check user login status
-        window.onload = function() {
-            checkIfUserLoggedIn();
-        };
-    </script>
+    <title>Display Cognito User Name</title>
 </head>
 <body>
     <header>
         <nav>
             <div id="user-info">
-                <span id="user-name">Guest</span>
+                <span id="user-name">Loading...</span>
             </div>
         </nav>
     </header>
 
     <h1>Welcome to Infinigallery</h1>
+
+    <script>
+        // Fetch the user name from Express server
+        fetch('http://localhost:3000/user')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('user-name').innerText = `Welcome, ${data.name}`;
+            })
+            .catch(error => {
+                console.log('Error fetching user:', error);
+                document.getElementById('user-name').innerText = 'Guest';
+            });
+    </script>
 </body>
 </html>
