@@ -3,8 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cognito User Display</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Check Cognito User Status</title>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/amazon-cognito-identity-js/4.5.10/amazon-cognito-identity.min.js"></script>
+    <script>
+        // Configure Cognito
+        const poolData = {
+            UserPoolId: 'ap-south-1_02GdgF0x4', // Your User Pool ID
+            ClientId: '19ekqosinh7s7hb5jqikej5c2d', // Your Client ID
+        };
+
+        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+        // Trigger to check if a user is logged in
+        function checkIfUserLoggedIn() {
+            const cognitoUser = userPool.getCurrentUser();
+            
+            if (cognitoUser) {
+                // User is logged in, get the session
+                cognitoUser.getSession(function(err, session) {
+                    if (err) {
+                        console.log("Error fetching session: ", err);
+                        return;
+                    }
+
+                    if (session.isValid()) {
+                        console.log("User is logged in, session valid.");
+
+                        // Fetch and display the user's email
+                        cognitoUser.getUserAttributes(function(err, attributes) {
+                            if (err) {
+                                console.log("Error fetching attributes: ", err);
+                            } else {
+                                attributes.forEach(attr => {
+                                    if (attr.getName() === 'email') {
+                                        const userEmail = attr.getValue();
+                                        document.getElementById('user-name').innerText = `Welcome, ${userEmail}`;
+                                    }
+                                });
+                            }
+                        });
+                    } else {
+                        console.log("Session is not valid.");
+                    }
+                });
+            } else {
+                console.log("No user is logged in.");
+                document.getElementById('user-name').innerText = 'Guest';
+            }
+        }
+
+        // Call the function on page load to check user login status
+        window.onload = function() {
+            checkIfUserLoggedIn();
+        };
+    </script>
 </head>
 <body>
     <header>
@@ -16,9 +69,5 @@
     </header>
 
     <h1>Welcome to Infinigallery</h1>
-    
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.7.16.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/amazon-cognito-identity-js/4.5.10/amazon-cognito-identity.min.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>
