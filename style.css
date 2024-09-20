@@ -1,0 +1,11 @@
+#user-info {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 1.2rem;
+    color: #000; /* Adjust the color */
+}
+
+#user-name {
+    font-weight: bold;
+}
