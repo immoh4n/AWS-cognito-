@@ -1,7 +1,7 @@
 // Configure Cognito
 const poolData = {
-    UserPoolId: 'your_user_pool_id', // Replace with your User Pool ID
-    ClientId: 'your_client_id', // Replace with your Client ID
+    UserPoolId: 'ap-south-1_02GdgF0x4', // Your User Pool ID
+    ClientId: '19ekqosinh7s7hb5jqikej5c2d', // Your Client ID
 };
 
 const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
@@ -25,7 +25,7 @@ if (cognitoUser) {
                     attributes.forEach(attr => {
                         if (attr.getName() === 'name') {
                             const userName = attr.getValue();
-                            document.getElementById('user-name').innerText = userName;
+                            document.getElementById('user-name').innerText = `Welcome, ${userName}`;
                         }
                     });
                 }
