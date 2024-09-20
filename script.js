@@ -1,44 +1,42 @@
-// Configure Cognito
+const express = require('express');
+const bodyParser = require('body-parser');
+const AWS = require('aws-sdk');
+const { CognitoUserPool, CognitoUser } = require('amazon-cognito-identity-js');
+
+const app = express();
+app.use(bodyParser.json());
+
 const poolData = {
-    UserPoolId: 'ap-south-1_02GdgF0x4', // Your User Pool ID
-    ClientId: '19ekqosinh7s7hb5jqikej5c2d', // Your Client ID
+    UserPoolId: 'ap-south-1_02GdgF0x4',  // Your User Pool ID
+    ClientId: '19ekqosinh7s7hb5jqikej5c2d'  // Your Client ID
 };
 
-const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+// Route to fetch logged-in user's data
+app.get('/user', (req, res) => {
+    const userPool = new CognitoUserPool(poolData);
+    const cognitoUser = userPool.getCurrentUser();
 
-// Check if the user is logged in
-const cognitoUser = userPool.getCurrentUser();
+    if (cognitoUser) {
+        cognitoUser.getSession((err, session) => {
+            if (err) {
+                return res.status(401).send('User not authenticated');
+            }
 
-if (cognitoUser) {
-    console.log("User found: ", cognitoUser);
-    cognitoUser.getSession(function(err, session) {
-        if (err) {
-            console.error("Error getting session: ", err);
-            return;
-        }
-
-        if (session.isValid()) {
-            console.log("Session is valid. Fetching user attributes...");
-            
-            // Get user attributes
-            cognitoUser.getUserAttributes(function(err, attributes) {
+            cognitoUser.getUserAttributes((err, attributes) => {
                 if (err) {
-                    console.error("Error fetching attributes: ", err);
-                } else {
-                    console.log("Attributes fetched: ", attributes);
-                    attributes.forEach(attr => {
-                        console.log(attr.getName(), attr.getValue()); // Debug attribute names and values
-                        if (attr.getName() === 'name') {
-                            const userName = attr.getValue();
-                            document.getElementById('user-name').innerText = `Welcome, ${userName}`;
-                        }
-                    });
+                    return res.status(500).send('Error fetching attributes');
                 }
+
+                // Find and send the name attribute
+                const nameAttr = attributes.find(attr => attr.getName() === 'name');
+                res.json({ name: nameAttr ? nameAttr.getValue() : 'Guest' });
             });
-        } else {
-            console.log("Session is not valid.");
-        }
-    });
-} else {
-    console.log("No user is logged in");
-}
+        });
+    } else {
+        res.status(401).send('No user logged in');
+    }
+});
+
+app.listen(3000, () => {
+    console.log('Server running on port 3000');
+});
