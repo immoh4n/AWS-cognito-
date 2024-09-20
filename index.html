@@ -5,54 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check Cognito User Status</title>
 
-    <!-- AWS SDK for Cognito -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/amazon-cognito-identity-js/6.1.0/amazon-cognito-identity.min.js"></script>
-    
+    <!-- AWS Amplify Library -->
+    <script src="https://cdn.jsdelivr.net/npm/aws-amplify@4.3.22/dist/aws-amplify.min.js"></script>
+
     <script>
-        // Configure Cognito
-        const poolData = {
-            UserPoolId: 'ap-south-1_02GdgF0x4', // Your User Pool ID
-            ClientId: '19ekqosinh7s7hb5jqikej5c2d', // Your Client ID
-        };
-
-        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-
-        // Trigger to check if a user is logged in
-        function checkIfUserLoggedIn() {
-            const cognitoUser = userPool.getCurrentUser();
-            
-            if (cognitoUser) {
-                // User is logged in, get the session
-                cognitoUser.getSession(function(err, session) {
-                    if (err) {
-                        console.log("Error fetching session: ", err);
-                        return;
-                    }
-
-                    if (session.isValid()) {
-                        console.log("User is logged in, session valid.");
-
-                        // Fetch and display the user's email
-                        cognitoUser.getUserAttributes(function(err, attributes) {
-                            if (err) {
-                                console.log("Error fetching attributes: ", err);
-                            } else {
-                                attributes.forEach(attr => {
-                                    if (attr.getName() === 'email') {
-                                        const userEmail = attr.getValue();
-                                        document.getElementById('user-name').innerText = `Welcome, ${userEmail}`;
-                                    }
-                                });
-                            }
-                        });
-                    } else {
-                        console.log("Session is not valid.");
-                    }
-                });
-            } else {
-                console.log("No user is logged in.");
-                document.getElementById('user-name').innerText = 'Guest';
+        // Configure Amplify with your Cognito details
+        Amplify.configure({
+            Auth: {
+                region: 'ap-south-1', // Your AWS region
+                userPoolId: 'ap-south-1_02GdgF0x4', // Your User Pool ID
+                userPoolWebClientId: '19ekqosinh7s7hb5jqikej5c2d', // Your App Client ID
             }
+        });
+
+        // Function to check if the user is logged in
+        function checkIfUserLoggedIn() {
+            Amplify.Auth.currentAuthenticatedUser()
+                .then(user => {
+                    // Successfully retrieved user
+                    const userEmail = user.attributes.email;
+                    document.getElementById('user-name').innerText = `Welcome, ${userEmail}`;
+                })
+                .catch(() => {
+                    // No user logged in
+                    document.getElementById('user-name').innerText = 'Guest';
+                });
         }
 
         // Call the function on page load to check user login status
